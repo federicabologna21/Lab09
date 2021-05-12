@@ -7,8 +7,13 @@ import java.util.Map;
 
 import org.jgrapht.Graphs;
 import org.jgrapht.alg.connectivity.ConnectivityInspector;
+import org.jgrapht.event.ConnectedComponentTraversalEvent;
+import org.jgrapht.event.EdgeTraversalEvent;
+import org.jgrapht.event.TraversalListener;
+import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
+import org.jgrapht.traverse.BreadthFirstIterator;
 
 import it.polito.tdp.borders.db.BordersDAO;
 
@@ -17,6 +22,7 @@ public class Model {
 	BordersDAO dao;
 	private SimpleGraph <Country, DefaultEdge> grafo;
 	private Map<Integer, Country> idMap;
+	private Map <Country, Country> visita;
 	
 	public Model() {
 		
@@ -95,4 +101,89 @@ public class Model {
 		ConnectivityInspector<Country, DefaultEdge> ci = new ConnectivityInspector<>(grafo);
 		return ci.connectedSets().size();
 	}
+	
+	/**
+	 * ESERCIZIO 2 --> VISITA DI UN GRAFO
+	 * TROVO LA LISTA DI VERTICI RAGGIUNGIBILI A PARTIRE DA UN VERTICE
+	 */
+	public List<Country> trovaPercorso(Country c){
+		
+		BreadthFirstIterator<Country, DefaultEdge> bfv = new BreadthFirstIterator<>(grafo,c);
+		visita = new HashMap<>();
+		visita.put(c, null);
+		
+		bfv.addTraversalListener(new TraversalListener<Country, DefaultEdge>(){
+
+			@Override
+			public void connectedComponentFinished(ConnectedComponentTraversalEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void connectedComponentStarted(ConnectedComponentTraversalEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void edgeTraversed(EdgeTraversalEvent<DefaultEdge> e) {
+				// TODO Auto-generated method stub
+				Country c1 = grafo.getEdgeSource(e.getEdge());
+				Country c2 = grafo.getEdgeSource(e.getEdge());
+	
+					if (visita.containsKey(c1) && !visita.containsKey(c2)) {
+						visita.put(c2, c1);
+						
+					}else if (visita.containsKey(c2) && !visita.containsKey(c1)) {
+						visita.put(c1, c2);
+					}
+					
+			}
+
+			@Override
+			public void vertexTraversed(VertexTraversalEvent<Country> e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void vertexFinished(VertexTraversalEvent<Country> e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});
+		
+		List<Country> percorso = new LinkedList<>();
+		// SICCOME HO UN SOLO PARAMETRO DA CUI PARTIRE
+		// PER TROVARE IL PERCORSO
+		// TUTTE LE VOLTE CHE INCONTRO UN VERTICE LO AGGIUNGO
+		while(bfv.hasNext()) {
+			Country stato = bfv.next();
+			percorso.add(stato);
+		}
+		
+		return percorso;
+		
+		
+	}
+
+	public BordersDAO getDao() {
+		return dao;
+	}
+
+	public void setDao(BordersDAO dao) {
+		this.dao = dao;
+	}
+
+	public Map<Integer, Country> getIdMap() {
+		return idMap;
+	}
+
+	public void setIdMap(Map<Integer, Country> idMap) {
+		this.idMap = idMap;
+	}
+	
+	
 }

@@ -6,11 +6,14 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.borders.model.Border;
+import it.polito.tdp.borders.model.Country;
 import it.polito.tdp.borders.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Button;
 
 public class FXMLController {
 
@@ -27,6 +30,13 @@ public class FXMLController {
 
     @FXML // fx:id="txtResult"
     private TextArea txtResult; // Value injected by FXMLLoader
+    
+    @FXML
+    private ComboBox<Country> cmbStati;
+    
+
+    @FXML // fx:id="btnStatiRaggiungibili"
+    private Button btnStatiRaggiungibili; // Value injected by FXMLLoader
 
     @FXML
     void doCalcolaConfini(ActionEvent event) {
@@ -61,6 +71,7 @@ public class FXMLController {
     	// PUNTI B e C
     	// --> CREO IL GRAFO
     	this.model.creaGrafo(inserisci);
+    	this.cmbStati.getItems().addAll(this.model.getDao().getVertici(inserisci, model.getIdMap()));
     	txtResult.appendText("GRAFO CREATO!"+"\n");
     	txtResult.appendText("# NUM VERTICI: "+this.model.getNumeroVertici()+"\n");
     	txtResult.appendText("# NUM ARCHI: "+this.model.getNumeroArchi()+"\n");
@@ -70,15 +81,43 @@ public class FXMLController {
     	txtResult.appendText("Il numero di componenti connesse al grafo è: "+this.model.getNumeroComponentiConnesse());
     	
     }
+    
+    @FXML
+    void doStatiRaggiungibili(ActionEvent event) {
+    	txtResult.clear();
+    	Country scelta = cmbStati.getValue();
+    	
+    	if(scelta == null) {
+    		txtResult.appendText("ERRORE! SELEZIONARE UNO STATO");
+    		return;
+    	}
+    	
+    	List<Country> elenco = this.model.trovaPercorso(scelta);
+    	
+    	if (elenco.size()==0) {
+    		txtResult.appendText("NON CI SONO CONFINI PER LO STATO: "+scelta);
+    		return;
+    	}
+    	
+    	txtResult.appendText("Stati raggiungibili per: "+scelta+"\n");
+    	for (Country c: elenco) {
+    		if(!scelta.equals(c)) {
+	    		txtResult.appendText(c.toString()+"\n");
+    		}
+    	}
+    	
+    }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
         assert txtAnno != null : "fx:id=\"txtAnno\" was not injected: check your FXML file 'Scene.fxml'.";
         assert txtResult != null : "fx:id=\"txtResult\" was not injected: check your FXML file 'Scene.fxml'.";
-
+        assert cmbStati != null : "fx:id=\"cmbStati\" was not injected: check your FXML file 'Scene.fxml'.";
+        assert btnStatiRaggiungibili != null : "fx:id=\"btnStatiRaggiungibili\" was not injected: check your FXML file 'Scene.fxml'.";
     }
     
     public void setModel(Model model) {
     	this.model = model;
+    	
     }
 }

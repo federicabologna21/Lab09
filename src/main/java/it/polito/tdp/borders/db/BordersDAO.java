@@ -14,6 +14,31 @@ import it.polito.tdp.borders.model.Country;
 
 public class BordersDAO {
 
+	
+	// MI CREO UN METODO ANALOGO MA SENZA PASSARE LA MAPPA
+	public List<Country> elencoStatiCombo(){
+		String sql = "SELECT ccode, StateAbb, StateNme FROM country ORDER BY StateAbb";
+		List<Country> result = new LinkedList<>();
+		
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				Country c = new Country (rs.getInt("ccode"), rs.getString("StateAbb"), rs.getString("StateNme"));
+				result.add(c);
+			}
+			
+			conn.close();
+			return result;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+	}
 	public void loadAllCountries(Map<Integer, Country> idMap) {
 
 		String sql = "SELECT ccode, StateAbb, StateNme FROM country ORDER BY StateAbb";
